@@ -1,0 +1,59 @@
+﻿@using TreeTableTest.Data;
+@using System.Collections.Generic
+
+@if (Table.Children.Count > 0)
+{
+    <table style="height: @(tableRows.Count * 100)px">
+        @foreach (var tableRow in tableRows)
+        {
+            <tr>
+                @foreach (var node in tableRow)
+                {
+                    <td colspan="@(CountLeaves(node))" rowspan="@(node.VerticalSpan)" style="background-color: @(node.Color)">@node.Value</td>
+                }
+            </tr>
+        }
+    </table>
+}
+
+@code {
+
+    [Parameter]
+    public TreeTable Table { get; set; }
+
+    private List<List<TreeTableNode>> tableRows;
+
+    protected override void OnParametersSet()
+    {
+        tableRows = new List<List<TreeTableNode>>();
+
+        RenderTreeTable(Table.Children, 0);
+    }
+
+    private int CountLeaves(TreeTableNode node)
+    {
+        if (node.Children.Count > 0)
+        {
+            return node.Children.Sum(childNode => CountLeaves(childNode));
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    private void RenderTreeTable(List<TreeTableNode> nodes, int level)
+    {
+        foreach (var node in nodes)
+        {
+            if (tableRows.Count <= level)
+            {
+                tableRows.Add(new List<TreeTableNode>());
+            }
+
+            tableRows[level].Add(node);
+
+            RenderTreeTable(node.Children, level + node.VerticalSpan);
+        }
+    }
+}
